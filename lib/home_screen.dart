@@ -432,14 +432,11 @@ class _HomeScreenState extends State<HomeScreen>
               return Container(
                 height: 279,
                 child: GestureDetector(
-                  onTap: (){
-
-                  },
+                  onTap: () {},
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) {
-          
                       var varTitle = '';
                       var varText = '';
                       ParseFile? varFile;
@@ -456,7 +453,8 @@ class _HomeScreenState extends State<HomeScreen>
                       }
                       return Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: getContainerNewsType1(varText, varTitle, varFile),
+                        child:
+                            getContainerNewsType1(varText, varTitle, varFile),
                       );
                     },
                   ),
