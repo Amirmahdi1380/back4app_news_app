@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.only(top: 20, bottom: 22, right: 28, left: 28),
+            padding: EdgeInsets.only(top: 20, bottom: 0, right: 28, left: 28),
             child: Row(
               children: [
                 Text(
@@ -125,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.only(top: 20, bottom: 22, right: 28, left: 28),
+            padding: EdgeInsets.only(top: 20, bottom: 0, right: 28, left: 28),
             child: Row(
               children: [
                 Text(
@@ -149,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget getContainerNewsType2() {
+  Widget getContainerNewsType2(String varText, String varTitle, varFile) {
     return Container(
       height: 132,
       width: 380,
@@ -172,8 +172,9 @@ class _HomeScreenState extends State<HomeScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  'ساعت هوشمند گارمین با همر باتری ۱۱ روزه',
+                  varTitle,
                   overflow: TextOverflow.ellipsis,
+                  softWrap: true,
                   style: TextStyle(
                     fontSize: 14,
                     fontFamily: 'SM',
@@ -184,34 +185,38 @@ class _HomeScreenState extends State<HomeScreen>
                 SizedBox(
                   height: 5,
                 ),
-                Text(
-                  '''
-ساعت هوشمند گارمین با همر باتری ۱۱ روزه
-ساعت هوشمند گارمین با همر باتری ۱۱ روزه
-ساعت هوشمند گارمین با همر باتری ۱۱ روزه
-''',
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 8,
-                    fontFamily: 'SM',
-                    color: Color(0xffBFC3C8),
-                    fontWeight: FontWeight.normal,
+                Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: SizedBox(
+                    width: 230,
+                    child: Text(
+                      varText,
+                      overflow: TextOverflow.visible,
+                      softWrap: true,
+                      style: TextStyle(
+                        fontSize: 8,
+                        fontFamily: 'SM',
+                        color: Color(0xffBFC3C8),
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
                   ),
                 ),
                 SizedBox(
                   height: 8,
                 ),
+                Spacer(),
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 0),
                   child: Row(
-                    //mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Icon(
-                        Icons.menu_rounded,
+                        Icons.menu,
                         size: 14,
                       ),
                       SizedBox(
-                        width: 120,
+                        width: 150,
                       ),
                       Text(
                         'خبرگزاری آخرین خبر',
@@ -224,7 +229,6 @@ class _HomeScreenState extends State<HomeScreen>
                       SizedBox(
                         width: 5,
                       ),
-                      Image.asset('assets/images/logo_news_name1.png')
                     ],
                   ),
                 )
@@ -237,7 +241,17 @@ class _HomeScreenState extends State<HomeScreen>
             children: [
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                child: Image.asset('assets/images/Image_news_type2.png'),
+                child: Container(
+                  height: 116,
+                  width: 116,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                    child: Image.network(
+                      varFile.url,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
               ),
               Positioned(
                 top: 11,
@@ -271,19 +285,66 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget getListBuildNewsType2() {
-    return SizedBox(
-      height: 600,
-      child: ListView.builder(
-        scrollDirection: Axis.vertical,
-        itemCount: 10,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: 5, horizontal: 24),
-            child: getContainerNewsType2(),
-          );
-        },
-      ),
+  FutureBuilder<List<ParseObject>> getListBuildNewsType2() {
+    return FutureBuilder<List<ParseObject>>(
+      future: getNews(),
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.none:
+          case ConnectionState.waiting:
+            return Center(
+              child: Container(
+                width: 100,
+                height: 100,
+                child: CircularProgressIndicator(
+                  color: Colors.black,
+                ),
+              ),
+            );
+          default:
+            if (snapshot.hasError) {
+              return Center(
+                child: Text("Error..."),
+              );
+            }
+            if (!snapshot.hasData) {
+              return Center(
+                child: Text("No Data..."),
+              );
+            } else {
+              return Container(
+                height: 600,
+                width: 380,
+                child: ListView.builder(
+                  scrollDirection: Axis.vertical,
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    var varTitle = '';
+                    var varText = '';
+                    ParseFile? varFile;
+                    if (snapshot.data![index].get<int>('status') == 0) {
+                      var varNews = snapshot.data![index];
+                      varTitle = varNews.get<String>('title')!;
+                      varText = varNews.get<String>('text')!;
+                      varFile = snapshot.data![index].get<ParseFile>('image');
+                    } else {
+                      if (snapshot.data![index] == 0) {
+                        Icon(Icons.menu);
+                      }
+                      return Container();
+                    }
+                    //final varImage = varNews.get<Image>('image')!;
+                    return Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                      child: getContainerNewsType2(varText, varTitle, varFile),
+                    );
+                  },
+                ),
+              );
+            }
+        }
+      },
     );
   }
 
@@ -370,21 +431,35 @@ class _HomeScreenState extends State<HomeScreen>
             } else {
               return Container(
                 height: 279,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    final varNews = snapshot.data![index];
-                    final varTitle = varNews.get<String>('title')!;
-                    final varText = varNews.get<String>('text')!;
-                    //final varImage = varNews.get<Image>('image')!;
-                    ParseFile? varFile =
-                        snapshot.data![index].get<ParseFile>('image');
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: getContainerNewsType1(varText, varTitle, varFile!),
-                    );
+                child: GestureDetector(
+                  onTap: (){
+
                   },
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+          
+                      var varTitle = '';
+                      var varText = '';
+                      ParseFile? varFile;
+                      if (snapshot.data![index].get<int>('status') == 1) {
+                        var varNews = snapshot.data![index];
+                        varTitle = varNews.get<String>('title')!;
+                        varText = varNews.get<String>('text')!;
+                        varFile = snapshot.data![index].get<ParseFile>('image');
+                      } else {
+                        return Padding(
+                          padding: EdgeInsets.only(left: 20),
+                          child: Container(),
+                        );
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: getContainerNewsType1(varText, varTitle, varFile),
+                      );
+                    },
+                  ),
                 ),
               );
             }
@@ -417,15 +492,19 @@ Widget getContainerNewsType1(String varText, String varTitle, varFile) {
     child: Container(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.max,
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2),
             child: Container(
               height: 140,
               width: 270,
-              child: Image.network(
-                varFile.url,
-                fit: BoxFit.fill,
+              child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+                child: Image.network(
+                  varFile.url,
+                  fit: BoxFit.fill,
+                ),
               ),
             ),
           ),
@@ -445,7 +524,7 @@ Widget getContainerNewsType1(String varText, String varTitle, varFile) {
                 ),
                 Spacer(),
                 Text(
-                  'پیشنهاد مونیوز',
+                  varTitle,
                   style: TextStyle(
                     fontFamily: 'SM',
                     color: Color(0xffBFC3C8),
@@ -469,11 +548,15 @@ Widget getContainerNewsType1(String varText, String varTitle, varFile) {
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
-                Text(
-                  'خبر از این قراره که ما میخوایم بریم',
-                  style: TextStyle(
-                    fontFamily: 'SM',
-                    color: Color(0xff1C1F2E),
+                SizedBox(
+                  width: 250,
+                  child: Text(
+                    varText,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontFamily: 'SM',
+                      color: Color(0xff1C1F2E),
+                    ),
                   ),
                 ),
               ],
@@ -485,9 +568,15 @@ Widget getContainerNewsType1(String varText, String varTitle, varFile) {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Row(
+              mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Icon(Icons.menu_sharp),
+                Padding(
+                  padding: EdgeInsets.only(right: 30),
+                  child: Icon(
+                    Icons.menu_sharp,
+                  ),
+                ),
                 Spacer(),
                 Text(
                   'خبرگزاری آخرین خبر',

@@ -20,6 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter SignUp',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -87,7 +88,8 @@ class _HomePageState extends State<HomePage> {
                   autocorrect: false,
                   decoration: const InputDecoration(
                       border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black)),
+                        borderSide: BorderSide(color: Colors.black),
+                      ),
                       labelText: 'E-mail'),
                 ),
                 const SizedBox(
